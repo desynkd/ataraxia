@@ -17,7 +17,8 @@ background.fill(pygame.Color('#000000'))
 
 manager = pygame_gui.UIManager((800, 600), theme_path="style.json")
 
-# UI elements
+# ------UI ELEMENTS-----
+# Main Menu
 labelMain_vKeyword = pygame_gui.elements.UILabel(
     relative_rect=pygame.Rect((150, 200), (250, 50)),
     text='Enter keyword for Vigenere Table',
@@ -50,11 +51,13 @@ buttonMain_decrypt = pygame_gui.elements.UIButton(
     text='Decrypt', manager=manager
 )
 
+# Shared UI
 buttonShared_return = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((10, 10), (50, 50)),
     text='Back', manager=manager, visible=False
 )
 
+# Encryption Screen
 buttonEncrypt_encrypt = pygame_gui.elements.UIButton(
     relative_rect=pygame.Rect((400, 340), (90, 50)),
     text='Encrypt', manager=manager, visible=False
@@ -83,10 +86,37 @@ textBoxEncrypt_ciphertext = pygame_gui.elements.UITextBox(
     manager=manager, visible=False
 )
 
+# Decryption Screen
+buttonDecrypt_decrypt = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((400, 340), (90, 50)),
+    text='Decrypt', manager=manager, visible=False
+)
+
+labelDecrypt_ciphertext = pygame_gui.elements.UILabel(
+    relative_rect=pygame.Rect((400, 100), (250, 50)),
+    text='Enter ciphertext',
+    manager=manager, visible=False
+)
+
+textDecrypt_ciphertext = pygame_gui.elements.UITextEntryLine(
+    relative_rect=pygame.Rect((400, 160), (200, 50)),
+    manager=manager, visible=False
+)
+
+labelDecrypt_plaintext = pygame_gui.elements.UILabel(
+    relative_rect=pygame.Rect((400, 220), (250, 50)),
+    text='Plaintext',
+    manager=manager, visible=False
+)
+
+textBoxDecrypt_plaintext = pygame_gui.elements.UITextBox(
+    relative_rect=pygame.Rect((400, 280), (250, 50)),
+    html_text='',
+    manager=manager, visible=False
+)
 
 
-
-# Global Variables
+# ------GLOBAL FUNCTIONS-----
 vTable = None
 vDict = None
 vKeyword = None
@@ -95,7 +125,7 @@ plaintext = None
 ciphertext = None
 
 
-# Custom Functions
+# ------CUSTOM FUNCTIONS-----
 def hideMainScreen():
     buttonMain_encrypt.hide()
     buttonMain_decrypt.hide()
@@ -128,6 +158,20 @@ def hideEncryptScreen():
     textBoxEncrypt_ciphertext.hide()
     labelEncrypt_ciphertext.hide()
 
+def showDecryptScreen():
+    buttonDecrypt_decrypt.show()
+    textDecrypt_ciphertext.show()
+    labelDecrypt_ciphertext.show()
+    textBoxDecrypt_plaintext.show()
+    labelDecrypt_plaintext.show()
+
+def hideDecryptScreen():
+    buttonDecrypt_decrypt.hide()
+    textDecrypt_ciphertext.hide()
+    labelDecrypt_ciphertext.hide()
+    textBoxDecrypt_plaintext.hide()
+    labelDecrypt_plaintext.hide()
+
 def getMainMenuInputs():
     global vKeyword, keyword
     vKeyword = textMain_vKeyword.get_text()
@@ -144,13 +188,21 @@ def getEncryptionInputs():
 
 def showEncryptionOutputs():
     global plaintext, ciphertext, keyword, vTable, vDict 
-    # print(plaintext, ciphertext, keyword)
-    # ataraxia.printTable(vTable)
-    # print(vDict)
     ciphertext = ataraxia.encrypt(plaintext, keyword, vTable, vDict)
     textBoxEncrypt_ciphertext.set_text(ciphertext)
-    
 
+def getDecryptionInputs():
+    global ciphertext
+    ciphertext = textDecrypt_ciphertext.get_text()
+
+def showDecryptionOutputs():
+    global plaintext, ciphertext, keyword, vTable, vDict 
+    plaintext = ataraxia.decrypt(ciphertext, keyword, vTable, vDict)
+    textBoxDecrypt_plaintext.set_text(plaintext)
+
+
+    
+# ------MAIN PYGAME-----
 clock = pygame.time.Clock()
 is_running = True
 
@@ -177,16 +229,23 @@ while is_running:
                 getMainMenuInputs() # get inputs
                 initializeAtaraxia(vKeyword) # create viginere table                
                 hideMainScreen() # hide ui and show new ui
+                showDecryptScreen()
 
             # click return to main menu
             if event.ui_element == buttonShared_return:
                 showMainScreen()
                 hideEncryptScreen()
+                hideDecryptScreen()
 
             # click to encrypt
             if event.ui_element == buttonEncrypt_encrypt:
                 getEncryptionInputs()
                 showEncryptionOutputs()
+
+            # click to decrypt
+            if event.ui_element == buttonDecrypt_decrypt:
+                getDecryptionInputs()
+                showDecryptionOutputs()
                 
 
 
