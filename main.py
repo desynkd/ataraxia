@@ -1,110 +1,203 @@
-def main():
-    vKeyword = input("Enter keyword for Vigenere Table: ")
-    vTable = createVigenereTable(vKeyword)
-    vdict = createDict(vTable[0])
-    # printTable(vTable)
-    # print(vdict)
-
-    keyword = input("Enter keyword for Encryption: ").upper()
+# conda env : serendibScops
 
 
-    while(True):
-        choice = input("Encrypt or Decrypt? (E/D): ").upper()
-        if choice =='E':
-            plaintext = input("Enter plaintext: ").upper()
-            ciphertext = encrypt(plaintext, keyword, vTable, vdict)
-            print("Ciphertext: ", ciphertext)
-        elif choice == 'D':
-            ciphertext = input("Enter ciphertext: ").upper()
-            plaintext = decrypt(ciphertext, keyword, vTable, vdict)
-            print("Plaintext: ", plaintext)
-        elif choice == "EXIT":
-            break
+import pygame
+import pygame_gui
+import myfunctions as ataraxia
+
+pygame.init()
+
+pygame.display.set_caption('Ataraxia')
+
+window_surface = pygame.display.set_mode((800, 600))
+
+background = pygame.Surface((800, 600))
+background.fill(pygame.Color('#000000'))
+# if you need, have a variable current screen to remember which screen you are on
+
+manager = pygame_gui.UIManager((800, 600), theme_path="style.json")
+
+# UI elements
+labelMain_vKeyword = pygame_gui.elements.UILabel(
+    relative_rect=pygame.Rect((150, 200), (250, 50)),
+    text='Enter keyword for Vigenere Table',
+    manager=manager
+)
+
+textMain_vKeyword = pygame_gui.elements.UITextEntryLine(
+    relative_rect=pygame.Rect((400, 200), (200, 50)),
+    manager=manager
+)
+
+labelMain_keyword = pygame_gui.elements.UILabel(
+    relative_rect=pygame.Rect((150, 260), (250, 50)),
+    text='Enter keyword for Encryption',
+    manager=manager
+)
+
+textMain_keyword = pygame_gui.elements.UITextEntryLine(
+    relative_rect=pygame.Rect((400, 260), (200, 50)),
+    manager=manager
+)
+
+buttonMain_encrypt = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((400, 320), (90, 50)),
+    text='Encrypt', manager=manager
+)
+
+buttonMain_decrypt = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((510, 320), (90, 50)),
+    text='Decrypt', manager=manager
+)
+
+buttonShared_return = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((10, 10), (50, 50)),
+    text='Back', manager=manager, visible=False
+)
+
+buttonEncrypt_encrypt = pygame_gui.elements.UIButton(
+    relative_rect=pygame.Rect((400, 340), (90, 50)),
+    text='Encrypt', manager=manager, visible=False
+)
+
+labelEncrypt_plaintext = pygame_gui.elements.UILabel(
+    relative_rect=pygame.Rect((400, 100), (250, 50)),
+    text='Enter plaintext',
+    manager=manager, visible=False
+)
+
+textEncrypt_plaintext = pygame_gui.elements.UITextEntryLine(
+    relative_rect=pygame.Rect((400, 160), (200, 50)),
+    manager=manager, visible=False
+)
+
+labelEncrypt_ciphertext = pygame_gui.elements.UILabel(
+    relative_rect=pygame.Rect((400, 220), (250, 50)),
+    text='Ciphertext',
+    manager=manager, visible=False
+)
+
+textBoxEncrypt_ciphertext = pygame_gui.elements.UITextBox(
+    relative_rect=pygame.Rect((400, 280), (250, 50)),
+    html_text='',
+    manager=manager, visible=False
+)
 
 
-def encrypt(plaintext, keyword, table, dict):
-    ciphertext = ""
-    for key in plaintext:
-        # print(table[dict[key]][dict[keyword[0]]])
-        ciphertext += table[dict[key]][dict[keyword[0]]]
-        keyword = shiftKeyword(keyword, 1)
-
-    return ciphertext
 
 
-def decrypt(ciphertext, keyword, table, dict):
-    plaintext = ""
-    for key in ciphertext:
-        alphabet = createAlphabet(keyword[0], dict)
-        # print(alphabet)
-        ciphertext_index = alphabet.index(key)
-        # print(ciphertext_index)
-        plaintext += table[0][ciphertext_index]
-        # print(plaintext)
-        keyword = shiftKeyword(keyword, 1)
-    return plaintext
+# Global Variables
+vTable = None
+vDict = None
+vKeyword = None
+keyword = None
+plaintext = None
+ciphertext = None
 
 
-def shiftKeyword(keyword, shift):
-    shiftedKeyword = keyword[shift:] + keyword[:shift]
-    # print(shiftedKeyword)
-    return shiftedKeyword
+# Custom Functions
+def hideMainScreen():
+    buttonMain_encrypt.hide()
+    buttonMain_decrypt.hide()
+    textMain_keyword.hide()
+    textMain_vKeyword.hide()
+    labelMain_keyword.hide()
+    labelMain_vKeyword.hide()
+    buttonShared_return.show()
+
+def showMainScreen():
+    buttonMain_encrypt.show()
+    buttonMain_decrypt.show()
+    textMain_keyword.show()
+    textMain_vKeyword.show()
+    labelMain_keyword.show()
+    labelMain_vKeyword.show()
+    buttonShared_return.hide()
+
+def showEncryptScreen():
+    buttonEncrypt_encrypt.show()
+    textEncrypt_plaintext.show()
+    labelEncrypt_plaintext.show()
+    textBoxEncrypt_ciphertext.show()
+    labelEncrypt_ciphertext.show()
+
+def hideEncryptScreen():
+    buttonEncrypt_encrypt.hide()
+    textEncrypt_plaintext.hide()
+    labelEncrypt_plaintext.hide()
+    textBoxEncrypt_ciphertext.hide()
+    labelEncrypt_ciphertext.hide()
+
+def getMainMenuInputs():
+    global vKeyword, keyword
+    vKeyword = textMain_vKeyword.get_text()
+    keyword = textMain_keyword.get_text()
+
+def initializeAtaraxia(inpKeyword):
+    global vTable, vDict
+    vTable = ataraxia.createVigenereTable(inpKeyword)
+    vDict = ataraxia.createDict(vTable[0])
+
+def getEncryptionInputs():
+    global plaintext
+    plaintext = textEncrypt_plaintext.get_text()
+
+def showEncryptionOutputs():
+    global plaintext, ciphertext, keyword, vTable, vDict 
+    # print(plaintext, ciphertext, keyword)
+    # ataraxia.printTable(vTable)
+    # print(vDict)
+    ciphertext = ataraxia.encrypt(plaintext, keyword, vTable, vDict)
+    textBoxEncrypt_ciphertext.set_text(ciphertext)
+    
+
+clock = pygame.time.Clock()
+is_running = True
 
 
-# def find_plaintext(table, keyword_char, ciphertext_index, dict):
-#     for key, value in dict.items():
-#         if value == keyword_char:
-#             for row in table:
-#                 if row[0] == key:
-#                     return row[ciphertext_index]
+while is_running:
+    time_delta = clock.tick(60)/1000.0
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            is_running = False
+
+        if event.type == pygame_gui.UI_BUTTON_PRESSED:
+
+            # click to navigate to encryption
+            if event.ui_element == buttonMain_encrypt:
+                getMainMenuInputs() # get inputs
+                initializeAtaraxia(vKeyword) # create viginere table                
+                hideMainScreen() # hide ui and show new ui
+                showEncryptScreen()
 
 
-def createAlphabet(key, dict):
-    alphabet = ""
-    swapped_dict = swapDict(dict)
-    # print(key)
-    # print(dict)
-    # print(swapped_dict)
-    start_value = dict[key]
-    for i in range(26):
-        next_value = (start_value + i) % 26  
-        alphabet += swapped_dict[next_value]
-    return alphabet
+            # click to navigate to decryption
+            if event.ui_element == buttonMain_decrypt:
+                getMainMenuInputs() # get inputs
+                initializeAtaraxia(vKeyword) # create viginere table                
+                hideMainScreen() # hide ui and show new ui
+
+            # click return to main menu
+            if event.ui_element == buttonShared_return:
+                showMainScreen()
+                hideEncryptScreen()
+
+            # click to encrypt
+            if event.ui_element == buttonEncrypt_encrypt:
+                getEncryptionInputs()
+                showEncryptionOutputs()
+                
 
 
-def createVigenereTable(keyword):
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        manager.process_events(event)
 
-    keyword = keyword.upper()
-    for letter in keyword:
-        alphabet = alphabet.replace(letter, "")
-    alphabet = keyword + alphabet
+    manager.update(time_delta)
+    
+    window_surface.blit(background, (0, 0))
+    manager.draw_ui(window_surface)
 
-    table = []
-    for i in range(26):
-        table.append(alphabet[i:] + alphabet[:i])
-    return table
+    
+    pygame.display.update()
 
-
-def createDict(List):
-    dict = {}
-    for i, key in enumerate(List):
-        dict[key] = i
-    return dict
-
-
-def swapDict(dict):
-    swapped_dict = {value: key for key, value in dict.items()}
-    # print(swapped_dict)
-    return swapped_dict
-
-
-def printTable(table):
-    for row in table:
-        print(row)
-
-
-if __name__ == '__main__':
-    main()
-
-
+pygame.quit()
